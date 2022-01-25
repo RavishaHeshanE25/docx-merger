@@ -2,16 +2,16 @@ var XMLSerializer = require('xmldom').XMLSerializer;
 var DOMParser = require('xmldom').DOMParser;
 
 
-var prepareNumbering = function(files) {
+var prepareNumberingAsync = async function(files) {
 
     var serializer = new XMLSerializer();
 
-    files.forEach(function(zip, index) {
+    await files.forEach(async function(zip, index) {
         var xmlBin = zip.file('word/numbering.xml');
         if (!xmlBin) {
             return;
         }
-        var xmlString = xmlBin.asText();
+        var xmlString = await xmlBin.async("text");
         var xml = new DOMParser().parseFromString(xmlString, 'text/xml');
         var nodes = xml.getElementsByTagName('w:abstractNum');
 
@@ -41,7 +41,6 @@ var prepareNumbering = function(files) {
                         styleLinks[styleLink].setAttribute('w:val', styleLinkId + '_' + index);
                     }
                 }
-
             }
         }
 
@@ -58,65 +57,47 @@ var prepareNumbering = function(files) {
                         absrefID[i].setAttribute('w:val', iId + index);
                     }
                 }
-
-
             }
         }
-
-
 
         var startIndex = xmlString.indexOf("<w:numbering ");
         xmlString = xmlString.replace(xmlString.slice(startIndex), serializer.serializeToString(xml.documentElement));
 
         zip.file("word/numbering.xml", xmlString);
-        // console.log(nodes);
     });
 };
 
-var mergeNumbering = function(files, _numbering) {
-
-    // this._builder = this._style;
-
-    // console.log("MERGE__STYLES");
-
-
-    files.forEach(function(zip) {
+var mergeNumberingAsync = async function(files, _numbering) {
+    await files.forEach(async function(zip) {
         var xmlBin = zip.file('word/numbering.xml');
         if (!xmlBin) {
           return;
         }
-        var xml = xmlBin.asText();
+        var xml = await xmlBin.async("text");
 
         xml = xml.substring(xml.indexOf("<w:abstractNum "), xml.indexOf("</w:numbering"));
 
         _numbering.push(xml);
-
     });
 };
 
-var generateNumbering = function(zip, _numbering) {
+var generateNumberingAsync = async function(zip, _numbering) {
     var xmlBin = zip.file('word/numbering.xml');
     if (!xmlBin) {
       return;
     }
-    var xml = xmlBin.asText();
+    var xml = await xmlBin.async("text");
     var startIndex = xml.indexOf("<w:abstractNum ");
     var endIndex = xml.indexOf("</w:numbering>");
 
-    // console.log(xml.substring(startIndex, endIndex))
-
     xml = xml.replace(xml.slice(startIndex, endIndex), _numbering.join(''));
-
-    // console.log(xml.substring(xml.indexOf("</w:docDefaults>")+16, xml.indexOf("</w:styles>")))
-    // console.log(this._style.join(''))
-    // console.log(xml)
 
     zip.file("word/numbering.xml", xml);
 };
 
 
 module.exports = {
-    prepareNumbering: prepareNumbering,
-    mergeNumbering: mergeNumbering,
-    generateNumbering: generateNumbering
+    prepareNumberingAsync,
+    mergeNumberingAsync,
+    generateNumberingAsync
 };
