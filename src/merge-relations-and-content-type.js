@@ -2,7 +2,7 @@ var XMLSerializer = require("xmldom").XMLSerializer;
 var DOMParser = require("xmldom").DOMParser;
 
 var mergeContentTypesAsync = async function (files, _contentTypes) {
-  await files.forEach(async function (zip) {
+  await Promise.all(files.map(async function (zip) {
     var xmlString = await zip.file("[Content_Types].xml").async("text");
     var xml = new DOMParser().parseFromString(xmlString, "text/xml");
 
@@ -15,11 +15,11 @@ var mergeContentTypesAsync = async function (files, _contentTypes) {
           _contentTypes[contentType] = childNodes[node].cloneNode();
       }
     }
-  });
+  }));
 };
 
 var mergeRelationsAsync = async function (files, _rel) {
-  await files.forEach(async function (zip) {
+  await Promise.all(files.map(async function (zip) {
     var xmlString = await zip.file("word/_rels/document.xml.rels").async("text");
     var xml = new DOMParser().parseFromString(xmlString, "text/xml");
 
@@ -31,7 +31,7 @@ var mergeRelationsAsync = async function (files, _rel) {
         if (!_rel[Id]) _rel[Id] = childNodes[node].cloneNode();
       }
     }
-  });
+  }));
 };
 
 var generateContentTypesAsync = async function (zip, _contentTypes) {

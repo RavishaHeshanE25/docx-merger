@@ -4,21 +4,27 @@ var DOMParser = require("xmldom").DOMParser;
 var prepareMediaFilesAsync = async function (files, media) {
   var count = 1;
 
-  await files.forEach(async function (zip, index) {
-    await zip.folder("word/media").forEach(async function (relativePath, _file) {
-      if (/^word\/media/.test(relativePath) && relativePath.length > 11) {
-        media[count] = {};
-        media[count].oldTarget = relativePath;
-        media[count].newTarget = relativePath
-          .replace(/[0-9]/, "_" + count)
-          .replace("word/", "");
-        media[count].fileIndex = index;
-        await updateMediaRelationsAsync(zip, count, media);
-        await updateMediaContentAsync(zip, count, media);
-        count++;
-      }
+  await Promise.all(files.map(async function (zip, index) {
+    const zipFiles = [];
+    zip.folder("word/media").forEach(function (relativePath, _file) {
+      zipFiles.push(relativePath);
     });
-  });
+    await Promise.all(
+      zipFiles.map(async function (relativePath) {
+        if (/^word\/media/.test(relativePath) && relativePath.length > 11) {
+          media[count] = {};
+          media[count].oldTarget = relativePath;
+          media[count].newTarget = relativePath
+            .replace(/[0-9]/, "_" + count)
+            .replace("word/", "");
+          media[count].fileIndex = index;
+          await updateMediaRelationsAsync(zip, count, media);
+          await updateMediaContentAsync(zip, count, media);
+          count++;
+        }
+      })
+    );
+  }));
 };
 
 var updateMediaRelationsAsync = async function (zip, count, _media) {

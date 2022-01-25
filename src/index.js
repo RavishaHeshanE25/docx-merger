@@ -24,9 +24,9 @@ function DocxMerger(options = {}) {
 
   var _self = this;
   this.addFilesAsync = async function (files = []) {
-    await files.forEach(async function (file) {
+    await Promise.all(files.map(async function (file) {
       _self._files.push(await new JSZip().loadAsync(file));
-    });
+    }));
     if (_self._files.length > 0) {
       await _self.mergeBodyAsync(_self._files);
     }
@@ -60,7 +60,7 @@ function DocxMerger(options = {}) {
     await Style.prepareStylesAsync(files, _self._style);
     await Style.mergeStylesAsync(files, _self._style);
 
-    await files.forEach(async function (zip, index) {
+    await Promise.all(files.map(async function (zip, index) {
       var xml = await zip.file("word/document.xml").async("text");
       xml = xml.substring(xml.indexOf("<w:body>") + 8);
       xml = xml.substring(0, xml.indexOf("</w:body>"));
@@ -68,7 +68,7 @@ function DocxMerger(options = {}) {
   
       _self.insertRaw(xml);
       if (_self._pageBreak && index < files.length - 1) _self.insertPageBreak();
-    });
+    }));
   };
 
   this.saveAsync = async function (type) {

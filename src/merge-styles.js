@@ -4,7 +4,7 @@ var DOMParser = require("xmldom").DOMParser;
 var prepareStylesAsync = async function (files, _style) {
   var serializer = new XMLSerializer();
 
-  await files.forEach(async function (zip, index) {
+  await Promise.all(files.map(async function (zip, index) {
     var xmlString = await zip.file("word/styles.xml").async("text");
     var xml = new DOMParser().parseFromString(xmlString, "text/xml");
     var nodes = xml.getElementsByTagName("w:style");
@@ -48,15 +48,15 @@ var prepareStylesAsync = async function (files, _style) {
     );
 
     zip.file("word/styles.xml", xmlString);
-  });
+  }));
 };
 
 var mergeStylesAsync = async function (files, _styles) {
-  await files.forEach(async function (zip) {
+  await Promise.all(files.map(async function (zip) {
     var xml = await zip.file("word/styles.xml").async("text");
     xml = xml.substring(xml.indexOf("<w:style "), xml.indexOf("</w:styles"));
     _styles.push(xml);
-  });
+  }));
 };
 
 var updateStyleRel_ContentAsync = async function (zip, fileIndex, styleId) {

@@ -6,7 +6,7 @@ var prepareNumberingAsync = async function(files) {
 
     var serializer = new XMLSerializer();
 
-    await files.forEach(async function(zip, index) {
+    await Promise.all(files.map(async function(zip, index) {
         var xmlBin = zip.file('word/numbering.xml');
         if (!xmlBin) {
             return;
@@ -64,11 +64,11 @@ var prepareNumberingAsync = async function(files) {
         xmlString = xmlString.replace(xmlString.slice(startIndex), serializer.serializeToString(xml.documentElement));
 
         zip.file("word/numbering.xml", xmlString);
-    });
+    }));
 };
 
 var mergeNumberingAsync = async function(files, _numbering) {
-    await files.forEach(async function(zip) {
+    await Promise.all(files.map(async function(zip) {
         var xmlBin = zip.file('word/numbering.xml');
         if (!xmlBin) {
           return;
@@ -78,7 +78,7 @@ var mergeNumberingAsync = async function(files, _numbering) {
         xml = xml.substring(xml.indexOf("<w:abstractNum "), xml.indexOf("</w:numbering"));
 
         _numbering.push(xml);
-    });
+    }));
 };
 
 var generateNumberingAsync = async function(zip, _numbering) {
