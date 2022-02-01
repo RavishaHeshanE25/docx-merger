@@ -17,35 +17,7 @@ var prepareNumberingAsync = async function (files) {
       for (var node in nodes) {
         if (/^\d+$/.test(node) && nodes[node].getAttribute) {
           var absID = nodes[node].getAttribute("w:abstractNumId");
-          nodes[node].setAttribute("w:abstractNumId", absID + index);
-          var pStyles = nodes[node].getElementsByTagName("w:pStyle");
-          for (var pStyle in pStyles) {
-            if (pStyles[pStyle].getAttribute) {
-              var pStyleId = pStyles[pStyle].getAttribute("w:val");
-              pStyles[pStyle].setAttribute("w:val", pStyleId + "_" + index);
-            }
-          }
-          var numStyleLinks = nodes[node].getElementsByTagName("w:numStyleLink");
-          for (var numstyleLink in numStyleLinks) {
-            if (numStyleLinks[numstyleLink].getAttribute) {
-              var styleLinkId = numStyleLinks[numstyleLink].getAttribute("w:val");
-              numStyleLinks[numstyleLink].setAttribute(
-                "w:val",
-                styleLinkId + "_" + index
-              );
-            }
-          }
-
-          var styleLinks = nodes[node].getElementsByTagName("w:styleLink");
-          for (var styleLink in styleLinks) {
-            if (styleLinks[styleLink].getAttribute) {
-              var styleLinkId = styleLinks[styleLink].getAttribute("w:val");
-              styleLinks[styleLink].setAttribute(
-                "w:val",
-                styleLinkId + "_" + index
-              );
-            }
-          }
+          nodes[node].setAttribute("w:abstractNumId", absID);
         }
       }
 
@@ -54,12 +26,11 @@ var prepareNumberingAsync = async function (files) {
       for (var node in numNodes) {
         if (/^\d+$/.test(node) && numNodes[node].getAttribute) {
           var ID = numNodes[node].getAttribute("w:numId");
-          numNodes[node].setAttribute("w:numId", ID + index);
+          numNodes[node].setAttribute("w:numId", ID);
           var absrefID = numNodes[node].getElementsByTagName("w:abstractNumId");
           for (var i in absrefID) {
             if (absrefID[i].getAttribute) {
               var iId = absrefID[i].getAttribute("w:val");
-              absrefID[i].setAttribute("w:val", iId + index);
             }
           }
         }
