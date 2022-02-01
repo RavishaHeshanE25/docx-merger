@@ -3,18 +3,17 @@ var DOMParser = require("xmldom").DOMParser;
 
 var prepareMediaFilesAsync = async function (files, media) {
   var count = 1;
-
-  await Promise.all(files.map(async function (zip, index) {
-    const zipFiles = [];
-    zip.folder("word/media").forEach(function (relativePath, _file) {
-      zipFiles.push(relativePath);
-    });
-    await Promise.all(
-      zipFiles.map(async function (relativePath) {
-        if (/^word\/media/.test(relativePath) && relativePath.length > 11) {
+  await Promise.all(
+    files.map(async function (zip, index) {
+      var medFiles = [];
+      zip.folder("word/media").forEach(function (relativePath) {
+        medFiles.push(relativePath);
+      });
+      await Promise.all(medFiles.map(async function (mfile) {
+        if (/^word\/media/.test(mfile) && mfile.length > 11) {
           media[count] = {};
-          media[count].oldTarget = relativePath;
-          media[count].newTarget = relativePath
+          media[count].oldTarget = mfile;
+          media[count].newTarget = mfile
             .replace(/[0-9]/, "_" + count)
             .replace("word/", "");
           media[count].fileIndex = index;
@@ -22,9 +21,9 @@ var prepareMediaFilesAsync = async function (files, media) {
           await updateMediaContentAsync(zip, count, media);
           count++;
         }
-      })
-    );
-  }));
+      }));
+    })
+  );
 };
 
 var updateMediaRelationsAsync = async function (zip, count, _media) {
@@ -70,13 +69,14 @@ var updateMediaContentAsync = async function (zip, count, _media) {
 };
 
 var copyMediaFilesAsync = async function (base, _media, _files) {
-  for (var media in _media) {
-    var content = await _files[_media[media].fileIndex]
-      .file(_media[media].oldTarget)
-      .async("uint8array");
-
-    base.file("word/" + _media[media].newTarget, content);
-  }
+  await Promise.all(
+    Object.keys(_media).map(async function (media) {
+      var content = _files[_media[media].fileIndex]
+        .file(_media[media].oldTarget)
+        .async("uint8array");
+        base.file("word/" + _media[media].newTarget, content);
+    })
+  );
 };
 
 module.exports = {
